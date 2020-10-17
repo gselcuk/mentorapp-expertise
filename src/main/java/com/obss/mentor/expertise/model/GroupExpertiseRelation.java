@@ -13,8 +13,8 @@ import lombok.Data;
 @Data
 @Document(indexName = "expertise_relations")
 public class GroupExpertiseRelation implements Approvable {
+  
   @Id
-  private String expertiseRelationId;
   private String mentorGroupId;
   private List<Expertises> expertiseAreas;
   private String menteeGroupId;
