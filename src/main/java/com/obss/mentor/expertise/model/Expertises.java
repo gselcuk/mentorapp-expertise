@@ -12,6 +12,7 @@ import lombok.Data;
 public class Expertises {
   private String category;
   private String expertiseName;
+  private String expertiseDescription;
   private List<String> keywords;
 
 }
