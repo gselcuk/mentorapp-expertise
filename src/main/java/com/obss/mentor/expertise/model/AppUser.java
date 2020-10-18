@@ -12,6 +12,7 @@ import lombok.Data;
 @Data
 @Builder
 public class AppUser {
+  
   private String id;
 
 }

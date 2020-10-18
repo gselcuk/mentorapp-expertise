@@ -1,10 +1,15 @@
 package com.obss.mentor.expertise.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-import com.netflix.discovery.EurekaClient;
+import com.obss.mentor.expertise.constant.AppServer;
+import com.obss.mentor.expertise.constant.Endpoint;
 import com.obss.mentor.expertise.model.AppUser;
+import com.obss.mentor.expertise.model.BeMentorRequest;
 import com.obss.mentor.expertise.model.GroupExpertiseRelation;
 import com.obss.mentor.expertise.repository.GroupExpertiseRelationRepository;
 
@@ -24,7 +29,7 @@ public class ExpertiseService {
   @Autowired
   private RestTemplate restTemplate;
   @Autowired
-  private EurekaClient discoveryClient;
+  private AppServer appServer;
 
   /**
    * Save model to database.
@@ -32,11 +37,12 @@ public class ExpertiseService {
    * @param groupExpertiseRelation
    * @return
    */
-  public GroupExpertiseRelation saveRelation(GroupExpertiseRelation groupExpertiseRelation) {
+  public GroupExpertiseRelation saveRelation(BeMentorRequest beMentorRequest) {
+    GroupExpertiseRelation groupExpertiseRelation = beMentorRequest.getGroupExpertiseRelation();
     approvalService.doOperation(groupExpertiseRelation, groupExpertiseRelationRepository);
 
     if (!groupExpertiseRelation.isApprovalNeeded())
-      setUserRole(groupExpertiseRelation.getMenteeGroupId());
+      setUserRole(groupExpertiseRelation.getMentorGroupId(), beMentorRequest.getAuthToken());
 
     return groupExpertiseRelation;
   }
@@ -46,10 +52,11 @@ public class ExpertiseService {
    * 
    * @param menteeGroupId
    */
-  private void setUserRole(String mentorGroupId) {
-    String url = discoveryClient.getNextServerFromEureka("mentorapp-user",false).getHomePageUrl();
-    restTemplate.postForEntity(url + "set/role/mentorgroupleader",
-        AppUser.builder().id(mentorGroupId).build(), AppUser.class);
+  private void setUserRole(String mentorGroupId, String authToken) {
+    HttpHeaders headers = new HttpHeaders();
+    headers.set("Authorization", "Basic " + authToken);
+    restTemplate.exchange(appServer.getUrlMentorUser(Endpoint.MENTOR_USER_UPDATE_ROLE),
+        HttpMethod.POST, new HttpEntity<>(AppUser.builder().id(mentorGroupId).build(), headers), AppUser.class);
   }
 
   /**

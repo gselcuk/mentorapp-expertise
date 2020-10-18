@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.obss.mentor.expertise.model.BeMentorRequest;
 import com.obss.mentor.expertise.model.GroupExpertiseRelation;
 import com.obss.mentor.expertise.service.ExpertiseService;
 
@@ -41,8 +42,8 @@ public class ExpertiseController {
    * @return
    */
   @PostMapping(value = "/save")
-  public GroupExpertiseRelation saveExpertise(@RequestBody GroupExpertiseRelation groupExpertiseRelation) {
-    return expertiseService.saveRelation(groupExpertiseRelation);
+  public GroupExpertiseRelation saveExpertise(@RequestBody BeMentorRequest beMentorRequest) {
+    return expertiseService.saveRelation(beMentorRequest);
   }
 
 }
