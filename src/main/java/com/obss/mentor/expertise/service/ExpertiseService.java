@@ -1,8 +1,6 @@
 package com.obss.mentor.expertise.service;
 
 import java.util.Arrays;
-import java.util.List;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -16,7 +14,9 @@ import com.obss.mentor.expertise.model.AppUser;
 import com.obss.mentor.expertise.model.BeMentorRequest;
 import com.obss.mentor.expertise.model.GroupExpertiseRelation;
 import com.obss.mentor.expertise.model.ListRelationResponse;
+import com.obss.mentor.expertise.model.RelationResponse;
 import com.obss.mentor.expertise.repository.GroupExpertiseRelationRepository;
+import com.obss.mentor.expertise.util.SecurityUtils;
 
 /**
  * Expertise service .
@@ -35,6 +35,8 @@ public class ExpertiseService {
   private RestTemplate restTemplate;
   @Autowired
   private AppServer appServer;
+  @Autowired
+  private SecurityUtils<AppUser> securityUtils;
 
   /**
    * Save model to database.
@@ -60,11 +62,10 @@ public class ExpertiseService {
    * @param menteeGroupId
    */
   private void setUserRole(String mentorGroupId, String authToken) {
-    HttpHeaders headers = new HttpHeaders();
-    headers.set("Authorization", "Basic " + authToken);
+    AppUser appUser = new AppUser();
+    appUser.setId(mentorGroupId);
     restTemplate.exchange(appServer.getUrlMentorUser(Endpoint.MENTOR_USER_UPDATE_ROLE),
-        HttpMethod.POST, new HttpEntity<>(AppUser.builder().id(mentorGroupId).build(), headers),
-        AppUser.class);
+        HttpMethod.POST, securityUtils.createRequestWithAuth(authToken, appUser), AppUser.class);
   }
 
   /**
@@ -73,11 +74,14 @@ public class ExpertiseService {
    * @param groupExpertiseRelation
    * @return
    */
-  public List<ListRelationResponse> getRelationById(String id) {
+  public ListRelationResponse getRelationById(String id, String authToken) {
+    RelationResponse relationResponse = RelationResponse.builder()
+        .groupExpertiseRelation(groupExpertiseRelationRepository.findById(id).orElse(null)).build();
 
-    return Arrays.asList(ListRelationResponse.builder()
-        .groupExpertiseRelation(groupExpertiseRelationRepository.findById(id).orElse(null))
-        .mentorName(findUserNameFromId(id)).build());
+    relationResponse.setMentorName(findUserNameFromId(
+        relationResponse.getGroupExpertiseRelation().getMentorGroupId(), authToken));
+
+    return ListRelationResponse.builder().listRelation(Arrays.asList(relationResponse)).build();
   }
 
   /**
@@ -85,9 +89,22 @@ public class ExpertiseService {
    * @param id
    * @return
    */
-  private String findUserNameFromId(String id) {
-    // TODO:find user name from given id.
-    return StringUtils.EMPTY;
+  private String findUserNameFromId(String id, String authToken) {
+    return restTemplate
+        .exchange(setUrlId(appServer.getUrlMentorUser(Endpoint.MENTOR_GET_USER_BY_ID), id),
+            HttpMethod.GET, securityUtils.createRequestWithAuth(authToken, null), AppUser.class)
+        .getBody().getUserName();
+  }
+
+  /**
+   * Set user for url.
+   * 
+   * @param urlMentorUser
+   * @param id
+   * @return
+   */
+  private String setUrlId(String urlMentorUser, String id) {
+    return String.format(urlMentorUser, id);
   }
 
 

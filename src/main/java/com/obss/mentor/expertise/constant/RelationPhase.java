@@ -7,10 +7,8 @@ package com.obss.mentor.expertise.constant;
  *
  */
 public enum RelationPhase {
-  
   NOT_STARTED,
   READY,
   ONGOING,
   FINISHED;
-
 }

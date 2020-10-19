@@ -1,6 +1,5 @@
 package com.obss.mentor.expertise.model;
 
-import java.util.List;
 import lombok.Builder;
 import lombok.Data;
 
@@ -11,7 +10,7 @@ import lombok.Data;
  */
 @Data
 @Builder
-public class ListRelationResponse {
-
-  List<RelationResponse> listRelation;
+public class RelationResponse {
+  private GroupExpertiseRelation groupExpertiseRelation;
+  private String mentorName;
 }

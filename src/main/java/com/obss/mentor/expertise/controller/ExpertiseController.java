@@ -1,6 +1,5 @@
 package com.obss.mentor.expertise.controller;
 
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,9 +31,10 @@ public class ExpertiseController {
    * @param id
    * @return
    */
-  @GetMapping(value = "/get/{id}")
-  public List<ListRelationResponse> getExpertiseRelation(@PathVariable("id") String id) {
-    return expertiseService.getRelationById(id);
+  @GetMapping(value = "/get/{authToken}/{id}")
+  public ListRelationResponse getExpertiseRelation(@PathVariable("id") String id,
+      @PathVariable("authToken") String authToken) {
+    return expertiseService.getRelationById(id, authToken);
   }
 
 
