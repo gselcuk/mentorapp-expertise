@@ -1,11 +1,11 @@
 package com.obss.mentor.expertise.service;
 
 import java.util.Arrays;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
 import com.obss.mentor.expertise.constant.AppServer;
 import com.obss.mentor.expertise.constant.Endpoint;
@@ -75,12 +75,22 @@ public class ExpertiseService {
    * @return
    */
   public ListRelationResponse getRelationById(String id, String authToken) {
-    RelationResponse relationResponse = RelationResponse.builder()
-        .groupExpertiseRelation(groupExpertiseRelationRepository.findById(id).orElse(null)).build();
+    GroupExpertiseRelation groupExpertiseRelation =
+        groupExpertiseRelationRepository.findById(id).orElse(null);
 
-    relationResponse.setMentorName(findUserNameFromId(
-        relationResponse.getGroupExpertiseRelation().getMentorGroupId(), authToken));
+    RelationResponse relationResponse = new RelationResponse();
 
+    relationResponse
+        .setMentorName(findUserNameFromId(groupExpertiseRelation.getMentorGroupId(), authToken));
+    relationResponse.setExpertiseAreas(groupExpertiseRelation.getExpertiseAreas());
+    relationResponse.setRelationPhase(groupExpertiseRelation.getRelationPhase());
+
+    if (!CollectionUtils.isEmpty(groupExpertiseRelation.getOtherMentors()))
+      relationResponse.setOtherMentors(groupExpertiseRelation.getOtherMentors().stream()
+          .map(mentor -> findUserNameFromId(mentor, authToken)).collect(Collectors.toList()));
+    if (!CollectionUtils.isEmpty(groupExpertiseRelation.getMentees()))
+      relationResponse.setOtherMentees(groupExpertiseRelation.getMentees().stream()
+          .map(mentee -> findUserNameFromId(mentee, authToken)).collect(Collectors.toList()));
     return ListRelationResponse.builder().listRelation(Arrays.asList(relationResponse)).build();
   }
 
