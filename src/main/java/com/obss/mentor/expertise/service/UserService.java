@@ -5,6 +5,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import com.obss.mentor.expertise.constant.AppServer;
@@ -31,11 +32,11 @@ public class UserService {
   public String findUserNameFromId(String id, String authToken) {
     if (StringUtils.isEmpty(id))
       return StringUtils.EMPTY;
-    
-    return restTemplate
-        .exchange(setUrlId(appServer.getUrlMentorUser(Endpoint.MENTOR_GET_USER_BY_ID), id),
-            HttpMethod.GET, securityUtils.createRequestWithAuth(authToken, null), AppUser.class)
-        .getBody().getUserName();
+    ResponseEntity<AppUser> responseEntity = restTemplate.exchange(
+        setUrlId(appServer.getUrlMentorUser(Endpoint.MENTOR_GET_USER_BY_ID), id), HttpMethod.GET,
+        securityUtils.createRequestWithAuth(authToken, null), AppUser.class);
+
+    return responseEntity.getBody() != null ? responseEntity.getBody().getUserName() : id;
   }
 
   /**
@@ -78,6 +79,6 @@ public class UserService {
       relationResponse.setOtherMentees(relationResponse.getOtherMentees().stream()
           .map(mentee -> findUserNameFromId(mentee, authToken)).collect(Collectors.toList()));
 
-    return null;
+    return relationResponse;
   }
 }
