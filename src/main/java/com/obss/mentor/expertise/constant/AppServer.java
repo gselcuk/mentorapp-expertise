@@ -21,7 +21,9 @@ public class AppServer {
 
 
   /**
+   * Create full endpoint for mentor user micro service.
    * 
+   * @param endpoint {@code Endpoint} ENUM.
    * @return
    */
   public String getUrlMentorUser(Endpoint endpoint) {

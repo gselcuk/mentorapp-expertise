@@ -9,7 +9,7 @@ import lombok.Data;
  *
  */
 @Data
-public class BeMentorRequest {
+public class GroupExpertiseRelationRequest {
   
   private GroupExpertiseRelation groupExpertiseRelation;
   private String authToken;

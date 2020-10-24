@@ -9,7 +9,8 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 /**
- * Main class of expertise microservice.
+ * Main class of expertise microservice.Discovery client and reactive elasctic repository enabled in
+ * this class.
  * 
  * @author Goktug Selcuk
  *
@@ -19,11 +20,17 @@ import org.springframework.web.client.RestTemplate;
 @EnableReactiveElasticsearchRepositories
 public class ExpertiseApplication {
 
+  /**
+   * Main metod.Entry point for Spring Boot application.
+   * 
+   * @param args
+   */
   public static void main(String[] args) {
     SpringApplication.run(ExpertiseApplication.class, args);
   }
 
   /**
+   * Rest template configuration.
    * 
    * @return
    */

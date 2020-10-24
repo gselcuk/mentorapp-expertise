@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import com.obss.mentor.expertise.constant.RelationPhase;
-import com.obss.mentor.expertise.model.BeMentorRequest;
+import com.obss.mentor.expertise.model.GroupExpertiseRelationRequest;
 import com.obss.mentor.expertise.model.GroupExpertiseRelation;
 import com.obss.mentor.expertise.model.RelationResponse;
 import com.obss.mentor.expertise.repository.GroupExpertiseRelationRepository;
@@ -33,20 +33,22 @@ public class ExpertiseService {
 
 
   /**
-   * Save model to database.
+   * Save model to database.For be mentor method relation phase is not started.
    * 
    * @param groupExpertiseRelation
    * @return
    */
-  public GroupExpertiseRelation saveRelation(BeMentorRequest beMentorRequest) {
-    GroupExpertiseRelation groupExpertiseRelation = beMentorRequest.getGroupExpertiseRelation();
+  public GroupExpertiseRelation beMentor(
+      GroupExpertiseRelationRequest groupExpertiseRelationRequest) {
+    GroupExpertiseRelation groupExpertiseRelation =
+        groupExpertiseRelationRequest.getGroupExpertiseRelation();
     groupExpertiseRelation.setRelationPhase(RelationPhase.NOT_STARTED);
 
     approvalService.doOperation(groupExpertiseRelation, groupExpertiseRelationRepository);
 
     if (!groupExpertiseRelation.isApprovalNeeded())
       userService.setUserRole(groupExpertiseRelation.getMentorGroupId(),
-          beMentorRequest.getAuthToken());
+          groupExpertiseRelationRequest.getAuthToken());
 
     return groupExpertiseRelation;
   }
@@ -69,6 +71,7 @@ public class ExpertiseService {
 
 
   /**
+   * Search given keywords and expertise names at database.
    * 
    * @param searchExpertiseRequest
    * @return
@@ -85,10 +88,27 @@ public class ExpertiseService {
 
     groupExpertiseRelations.forEach(relation -> listRelations.addAll(relation.stream()
         .map(RelationResponse::fromGroupExpertiseRelation).collect(Collectors.toList())));
-    
+
     return new ListRelationResponse(listRelations.stream()
         .map(relationResponse -> userService.getUserNames(relationResponse, authToken))
         .collect(Collectors.toList()));
+  }
+
+
+  /**
+   * Join mentor.Relation phase is ready after mentee joined to mentor.
+   * 
+   * @param groupExpertiseRelationRequest
+   * @return
+   */
+  public GroupExpertiseRelation saveGroupExpertiseRelationRequest(
+      GroupExpertiseRelationRequest groupExpertiseRelationRequest) {
+    GroupExpertiseRelation groupExpertiseRelation =
+        groupExpertiseRelationRequest.getGroupExpertiseRelation();
+
+    approvalService.doOperation(groupExpertiseRelation, groupExpertiseRelationRepository);
+
+    return groupExpertiseRelation;
   }
 
 

@@ -19,7 +19,7 @@ public enum Endpoint {
   }
 
   /**
-   * Return app server and end point .
+   * Return url of endpoint.
    * 
    * @return
    */
