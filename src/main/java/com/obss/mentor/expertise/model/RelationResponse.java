@@ -18,4 +18,20 @@ public class RelationResponse {
   private List<Expertises> expertiseAreas;
   private RelationPhase relationPhase;
 
+  public static RelationResponse fromGroupExpertiseRelation(
+      GroupExpertiseRelation groupExpertiseRelation) {
+    RelationResponse relationResponse = new RelationResponse();
+
+    if (groupExpertiseRelation == null)
+      return relationResponse;
+    
+    relationResponse.setExpertiseAreas(groupExpertiseRelation.getExpertiseAreas());
+    relationResponse.setRelationPhase(groupExpertiseRelation.getRelationPhase());
+    relationResponse.setOtherMentees(groupExpertiseRelation.getMentees());
+    relationResponse.setOtherMentors(groupExpertiseRelation.getOtherMentors());
+    relationResponse.setMentorName(groupExpertiseRelation.getMentorGroupId());
+    return relationResponse;
+
+  }
+
 }
