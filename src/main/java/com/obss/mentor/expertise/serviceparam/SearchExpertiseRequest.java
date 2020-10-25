@@ -14,3 +14,4 @@ public class SearchExpertiseRequest {
   private List<String> expertiseNames;
   private List<String> keywords;
 }
+ 

@@ -19,5 +19,8 @@ public interface GroupExpertiseRelationRepository
   
   @Query("{\"bool\": {\"must\": [{\"match\": {\"expertiseAreas.expertiseName\": \"?0\"}}]}}")
   Page<GroupExpertiseRelation> findByExpertiseName(String expertiseName, Pageable pageable);
+  
+  @Query("{\"bool\": {\"must\": [{\"match\": {\"mentees\": \"?0\"}}]}}")
+  Page<GroupExpertiseRelation> findInMentees(String userId, Pageable pageable);
 
 }

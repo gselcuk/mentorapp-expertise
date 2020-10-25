@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import com.obss.mentor.expertise.constant.DateFormat;
@@ -72,12 +71,21 @@ public class ExpertiseService {
    * @param groupExpertiseRelation
    * @return
    */
-  public ListRelationResponse getRelationById(String id, String authToken) {
+  public ListRelationResponse getRelationById(String id, Pageable pageable, String authToken) {
     RelationResponse relationResponse = RelationResponse
         .fromGroupExpertiseRelation(groupExpertiseRelationRepository.findById(id).orElse(null));
 
-    return new ListRelationResponse(
-        Arrays.asList(userService.getUserNames(relationResponse, authToken)));
+    List<GroupExpertiseRelation> menteesRelations =
+        groupExpertiseRelationRepository.findInMentees(id, pageable).getContent();
+
+    List<RelationResponse> listRelations = Arrays.asList(relationResponse);
+    if (CollectionUtils.isNotEmpty(menteesRelations))
+      listRelations = menteesRelations.stream().map(RelationResponse::fromGroupExpertiseRelation)
+          .collect(Collectors.toList());
+
+    return new ListRelationResponse(listRelations.stream()
+        .map(listRelation -> userService.getUserNames(listRelation, authToken))
+        .collect(Collectors.toList()));
   }
 
 
@@ -89,8 +97,7 @@ public class ExpertiseService {
    */
   public ListRelationResponse search(SearchExpertiseRequest searchExpertiseRequest,
       Pageable pageable, String authToken) {
-    List<GroupExpertiseRelation> asd = groupExpertiseRelationRepository
-    .findByExpertiseName("Java", pageable).getContent();
+
     List<List<GroupExpertiseRelation>> groupExpertiseRelations =
         searchExpertiseRequest.getExpertiseNames().stream()
             .map(expertise -> groupExpertiseRelationRepository
@@ -146,7 +153,8 @@ public class ExpertiseService {
     }
 
     if (!groupExpertiseRelation.isApprovalNeeded())
-      userService.setUserRole(joinRelationRequest.getUserId(), joinRelationRequest.getAuthToken(),GroupName.MENTEE);
+      userService.setUserRole(joinRelationRequest.getUserId(), joinRelationRequest.getAuthToken(),
+          GroupName.MENTEE);
 
     saveGroupExpertiseRelation(groupExpertiseRelation);
     return groupExpertiseRelation;

@@ -37,8 +37,10 @@ public class ExpertiseController {
    */
   @GetMapping(value = "/get/{authToken}/{id}")
   public ListRelationResponse getExpertiseRelation(@PathVariable("id") String id,
+      @RequestParam(value = "page", defaultValue = "0") int page,
+      @RequestParam(value = "size", defaultValue = "10") int size,
       @PathVariable("authToken") String authToken) {
-    return expertiseService.getRelationById(id, authToken);
+    return expertiseService.getRelationById(id, PageRequest.of(page, size), authToken);
   }
 
   /**
@@ -78,8 +80,7 @@ public class ExpertiseController {
    * @return
    */
   @PostMapping(value = "/join-relation")
-  public GroupExpertiseRelation joinRelation(
-      @RequestBody JoinRelationRequest joinRelationRequest) {
+  public GroupExpertiseRelation joinRelation(@RequestBody JoinRelationRequest joinRelationRequest) {
     return expertiseService.joinRelation(joinRelationRequest);
   }
 

@@ -1,6 +1,5 @@
 package com.obss.mentor.expertise.model;
 
-import java.util.Date;
 import java.util.List;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
@@ -26,7 +25,7 @@ public class GroupExpertiseRelation implements Approvable {
   private List<Expertises> expertiseAreas;
   private List<String> mentees;
   private RelationPhase relationPhase;
-  private Date startDate;
+  private String startDate;
 
 
   @Override

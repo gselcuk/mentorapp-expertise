@@ -17,6 +17,7 @@ public class RelationResponse {
   private List<String> otherMentors;
   private List<String> otherMentees;
   private List<Expertises> expertiseAreas;
+  private String startDate;
   private RelationPhase relationPhase;
 
   public static RelationResponse fromGroupExpertiseRelation(
@@ -31,6 +32,7 @@ public class RelationResponse {
     relationResponse.setOtherMentees(groupExpertiseRelation.getMentees());
     relationResponse.setOtherMentors(groupExpertiseRelation.getOtherMentors());
     relationResponse.setMentorName(groupExpertiseRelation.getMentorGroupId());
+    relationResponse.setStartDate(groupExpertiseRelation.getStartDate());
     return relationResponse;
 
   }
