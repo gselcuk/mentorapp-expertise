@@ -12,6 +12,7 @@ import lombok.Data;
 @Data
 public class RelationResponse {
 
+  private String mentorGroupId;
   private String mentorName;
   private List<String> otherMentors;
   private List<String> otherMentees;
@@ -24,7 +25,7 @@ public class RelationResponse {
 
     if (groupExpertiseRelation == null)
       return relationResponse;
-    
+    relationResponse.setMentorGroupId(groupExpertiseRelation.getMentorGroupId());
     relationResponse.setExpertiseAreas(groupExpertiseRelation.getExpertiseAreas());
     relationResponse.setRelationPhase(groupExpertiseRelation.getRelationPhase());
     relationResponse.setOtherMentees(groupExpertiseRelation.getMentees());

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.obss.mentor.expertise.model.GroupExpertiseRelationRequest;
 import com.obss.mentor.expertise.model.GroupExpertiseRelation;
 import com.obss.mentor.expertise.service.ExpertiseService;
+import com.obss.mentor.expertise.serviceparam.JoinRelationRequest;
 import com.obss.mentor.expertise.serviceparam.ListRelationResponse;
 import com.obss.mentor.expertise.serviceparam.SearchExpertiseRequest;
 
@@ -76,10 +77,10 @@ public class ExpertiseController {
    * @param groupExpertiseRelationRequest
    * @return
    */
-  @PostMapping(value = "/save")
-  public GroupExpertiseRelation joinMentor(
-      @RequestBody GroupExpertiseRelationRequest groupExpertiseRelationRequest) {
-    return expertiseService.saveGroupExpertiseRelationRequest(groupExpertiseRelationRequest);
+  @PostMapping(value = "/join-relation")
+  public GroupExpertiseRelation joinRelation(
+      @RequestBody JoinRelationRequest joinRelationRequest) {
+    return expertiseService.joinRelation(joinRelationRequest);
   }
 
 }
