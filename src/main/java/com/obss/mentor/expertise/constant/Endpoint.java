@@ -7,7 +7,8 @@ package com.obss.mentor.expertise.constant;
  *
  */
 public enum Endpoint {
-  MENTOR_USER_UPDATE_ROLE("user/set/role/mentorgroupleader"),
+  MENTOR_USER_SET_MENTOR("user/set/role/mentorgroupleader"),
+  MENTOR_USER_SET_MENTEE("set/role/mentee"),
   MENTOR_USER_AUTHENTICATE("user/authenticate"),
   MENTOR_GET_USER_BY_ID("user/get/%s");
 

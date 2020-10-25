@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import com.obss.mentor.expertise.constant.AppServer;
 import com.obss.mentor.expertise.constant.Endpoint;
+import com.obss.mentor.expertise.constant.GroupName;
+import com.obss.mentor.expertise.core.OperationFactory;
 import com.obss.mentor.expertise.model.AppUser;
 import com.obss.mentor.expertise.model.RelationResponse;
 import com.obss.mentor.expertise.util.SecurityUtils;
@@ -23,7 +25,8 @@ public class UserService {
   private AppServer appServer;
   @Autowired
   private SecurityUtils<AppUser> securityUtils;
-
+  @Autowired
+  private OperationFactory operationFactory;
   /**
    * 
    * @param id
@@ -55,11 +58,12 @@ public class UserService {
    * 
    * @param menteeGroupId
    */
-  public void setUserRole(String mentorGroupId, String authToken) {
+  public void setUserRole(String mentorGroupId, String authToken,GroupName groupName) {
     AppUser appUser = new AppUser();
     appUser.setId(mentorGroupId);
-    restTemplate.exchange(appServer.getUrlMentorUser(Endpoint.MENTOR_USER_UPDATE_ROLE),
-        HttpMethod.POST, securityUtils.createRequestWithAuth(authToken, appUser), AppUser.class);
+    
+    operationFactory.getOperation(groupName).setRole(appUser, authToken);
+
   }
 
   /**

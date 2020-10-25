@@ -2,13 +2,14 @@ package com.obss.mentor.expertise.service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+import com.obss.mentor.expertise.constant.DateFormat;
 import com.obss.mentor.expertise.constant.GroupName;
 import com.obss.mentor.expertise.constant.RelationPhase;
 import com.obss.mentor.expertise.core.OperationFactory;
@@ -20,6 +21,7 @@ import com.obss.mentor.expertise.repository.GroupExpertiseRelationRepository;
 import com.obss.mentor.expertise.serviceparam.JoinRelationRequest;
 import com.obss.mentor.expertise.serviceparam.ListRelationResponse;
 import com.obss.mentor.expertise.serviceparam.SearchExpertiseRequest;
+import com.obss.mentor.expertise.util.DateUtils;
 
 /**
  * Expertise service .
@@ -38,6 +40,8 @@ public class ExpertiseService {
   private UserService userService;
   @Autowired
   private OperationFactory operationFactory;
+  @Autowired
+  private DateUtils dateUtils;
 
   /**
    * Save model to database.For be mentor method relation phase is not started.
@@ -55,7 +59,7 @@ public class ExpertiseService {
 
     if (!groupExpertiseRelation.isApprovalNeeded())
       userService.setUserRole(groupExpertiseRelation.getMentorGroupId(),
-          groupExpertiseRelationRequest.getAuthToken());
+          groupExpertiseRelationRequest.getAuthToken(), GroupName.MENTOR);
 
     return groupExpertiseRelation;
   }
@@ -85,6 +89,8 @@ public class ExpertiseService {
    */
   public ListRelationResponse search(SearchExpertiseRequest searchExpertiseRequest,
       Pageable pageable, String authToken) {
+    List<GroupExpertiseRelation> asd = groupExpertiseRelationRepository
+    .findByExpertiseName("Java", pageable).getContent();
     List<List<GroupExpertiseRelation>> groupExpertiseRelations =
         searchExpertiseRequest.getExpertiseNames().stream()
             .map(expertise -> groupExpertiseRelationRepository
@@ -136,9 +142,12 @@ public class ExpertiseService {
 
     if (isFirstMenteeJoin(groupExpertiseRelation, joinRelationRequest.getGroupName())) {
       groupExpertiseRelation.setRelationPhase(RelationPhase.READY);
-      groupExpertiseRelation.setStartDate(new Date());
+      groupExpertiseRelation.setStartDate(dateUtils.getCurrentDate(DateFormat.CALENDAR_DATE));
     }
-    
+
+    if (!groupExpertiseRelation.isApprovalNeeded())
+      userService.setUserRole(joinRelationRequest.getUserId(), joinRelationRequest.getAuthToken(),GroupName.MENTEE);
+
     saveGroupExpertiseRelation(groupExpertiseRelation);
     return groupExpertiseRelation;
   }
