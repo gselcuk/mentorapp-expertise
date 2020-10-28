@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import com.obss.mentor.expertise.model.GroupExpertiseRelationRequest;
 import com.obss.mentor.expertise.model.GroupExpertiseRelation;
+import com.obss.mentor.expertise.model.GroupExpertiseRelationRequest;
 import com.obss.mentor.expertise.service.ExpertiseService;
 import com.obss.mentor.expertise.serviceparam.JoinRelationRequest;
 import com.obss.mentor.expertise.serviceparam.ListRelationResponse;
@@ -83,5 +83,7 @@ public class ExpertiseController {
   public GroupExpertiseRelation joinRelation(@RequestBody JoinRelationRequest joinRelationRequest) {
     return expertiseService.joinRelation(joinRelationRequest);
   }
+
+
 
 }
