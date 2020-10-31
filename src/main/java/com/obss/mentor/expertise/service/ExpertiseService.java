@@ -1,13 +1,13 @@
 package com.obss.mentor.expertise.service;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+import com.google.common.collect.Lists;
 import com.obss.mentor.expertise.constant.DateFormat;
 import com.obss.mentor.expertise.constant.GroupName;
 import com.obss.mentor.expertise.constant.RelationPhase;
@@ -78,10 +78,11 @@ public class ExpertiseService {
     List<GroupExpertiseRelation> menteesRelations =
         groupExpertiseRelationRepository.findInMentees(id, pageable).getContent();
 
-    List<RelationResponse> listRelations = Arrays.asList(relationResponse);
+    List<RelationResponse> listRelations = Lists.newArrayList(relationResponse);
+    
     if (CollectionUtils.isNotEmpty(menteesRelations))
-      listRelations = menteesRelations.stream().map(RelationResponse::fromGroupExpertiseRelation)
-          .collect(Collectors.toList());
+      listRelations.addAll(menteesRelations.stream().map(RelationResponse::fromGroupExpertiseRelation)
+          .collect(Collectors.toList()));
 
     return new ListRelationResponse(listRelations.stream()
         .map(listRelation -> userService.getUserNames(listRelation, authToken))

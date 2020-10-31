@@ -26,15 +26,15 @@ public class MenteeOperation implements Operation {
   private AppServer appServer;
   @Autowired
   private SecurityUtils<AppUser> securityUtils;
-  
+
   @Override
   public GroupExpertiseRelation joinRelation(GroupExpertiseRelation input, String userId) {
-    
-    if (CollectionUtils.isNotEmpty(input.getMentees()))
+
+    if (CollectionUtils.isNotEmpty(input.getMentees()) && !input.getMentees().contains(userId))
       input.getMentees().add(userId);
-    else
+    else if (CollectionUtils.isEmpty(input.getMentees()))
       input.setMentees(Arrays.asList(userId));
-    
+
     return input;
   }
 
@@ -42,7 +42,7 @@ public class MenteeOperation implements Operation {
   public void setRole(AppUser appUser, String authToken) {
     restTemplate.exchange(appServer.getUrlMentorUser(Endpoint.MENTOR_USER_SET_MENTEE),
         HttpMethod.POST, securityUtils.createRequestWithAuth(authToken, appUser), AppUser.class);
-    
+
   }
 
 }

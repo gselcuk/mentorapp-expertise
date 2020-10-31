@@ -13,5 +13,4 @@ public class Session {
   
    private String sessionDescription;
    private String sessionDate;
-   private boolean isCompleted;
 }
