@@ -11,7 +11,10 @@ import lombok.Data;
  */
 @Data
 public class SearchExpertiseRequest {
+  
   private List<String> expertiseNames;
   private List<String> keywords;
+  private boolean isAdmin;
+  
 }
  

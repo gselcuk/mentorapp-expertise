@@ -1,9 +1,11 @@
 package com.obss.mentor.expertise.service;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import com.google.common.collect.Lists;
 import com.obss.mentor.expertise.constant.RelationPhase;
 import com.obss.mentor.expertise.exception.MentorException;
 import com.obss.mentor.expertise.model.GroupExpertiseRelation;
@@ -45,13 +47,22 @@ public class SessionService {
     GroupSession groupSession = groupSessionRepository
         .findById(setSessionRequest.getMentorGroupId()).orElse(new GroupSession());
 
-    if (CollectionUtils.isNotEmpty(groupSession.getSessionHistory()))
-      groupSession.getSessionHistory().add(groupSession.getCurrentSession());
-    else
-      groupSession.setMentorGroupId(setSessionRequest.getMentorGroupId());
-
     Session currentSession = new Session();
     BeanUtils.copyProperties(setSessionRequest, currentSession);
+
+    if (currentSession.equals(groupSession.getCurrentSession()))
+      return groupSession;
+
+    if (StringUtils.isNotEmpty(groupSession.getMentorGroupId())) {
+      if (CollectionUtils.isNotEmpty(groupSession.getSessionHistory()))
+        groupSession.getSessionHistory().add(groupSession.getCurrentSession());
+      else
+        groupSession.setSessionHistory(Lists.newArrayList(groupSession.getCurrentSession()));
+    } else {
+      groupSession.setMentorGroupId(setSessionRequest.getMentorGroupId());
+    }
+
+
     groupSession.setCurrentSession(currentSession);
     GroupExpertiseRelation groupExpertiseRelation = groupExpertiseRelationRepository
         .findById(setSessionRequest.getMentorGroupId()).orElse(null);

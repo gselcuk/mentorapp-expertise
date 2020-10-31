@@ -79,16 +79,37 @@ public class ExpertiseService {
         groupExpertiseRelationRepository.findInMentees(id, pageable).getContent();
 
     List<RelationResponse> listRelations = Lists.newArrayList(relationResponse);
-    
+
     if (CollectionUtils.isNotEmpty(menteesRelations))
-      listRelations.addAll(menteesRelations.stream().map(RelationResponse::fromGroupExpertiseRelation)
-          .collect(Collectors.toList()));
+      listRelations.addAll(menteesRelations.stream()
+          .map(RelationResponse::fromGroupExpertiseRelation).collect(Collectors.toList()));
 
     return new ListRelationResponse(listRelations.stream()
-        .map(listRelation -> userService.getUserNames(listRelation, authToken))
-        .collect(Collectors.toList()));
+        .map(listRelation -> getUserNames(listRelation, authToken)).collect(Collectors.toList()));
   }
 
+  /**
+   * Get and set user names for {@code RelationResponse}.
+   * 
+   * @param relationResponse
+   * @param authToken
+   * @return
+   */
+  public RelationResponse getUserNames(RelationResponse relationResponse, String authToken) {
+    relationResponse
+        .setMentorName(userService.findUserNameFromId(relationResponse.getMentorName(), authToken));
+
+    if (CollectionUtils.isNotEmpty(relationResponse.getOtherMentors()))
+      relationResponse.setOtherMentors(relationResponse.getOtherMentors().stream()
+          .map(mentor -> userService.findUserNameFromId(mentor, authToken))
+          .collect(Collectors.toList()));
+    if (CollectionUtils.isNotEmpty(relationResponse.getOtherMentees()))
+      relationResponse.setOtherMentees(relationResponse.getOtherMentees().stream()
+          .map(mentee -> userService.findUserNameFromId(mentee, authToken))
+          .collect(Collectors.toList()));
+
+    return relationResponse;
+  }
 
   /**
    * Search given keywords and expertise names at database.
@@ -98,22 +119,30 @@ public class ExpertiseService {
    */
   public ListRelationResponse search(SearchExpertiseRequest searchExpertiseRequest,
       Pageable pageable, String authToken) {
-
-    List<List<GroupExpertiseRelation>> groupExpertiseRelations =
-        searchExpertiseRequest.getExpertiseNames().stream()
-            .map(expertise -> groupExpertiseRelationRepository
-                .findByExpertiseName(expertise, pageable).getContent())
-            .collect(Collectors.toList());
-
     List<RelationResponse> listRelations = new ArrayList<>();
 
-    groupExpertiseRelations.forEach(relation -> listRelations.addAll(
-        relation.stream().filter(rel -> !rel.getRelationPhase().equals(RelationPhase.ONGOING))
-            .map(RelationResponse::fromGroupExpertiseRelation).collect(Collectors.toList())));
+    if (searchExpertiseRequest.isAdmin()
+        && CollectionUtils.isEmpty(searchExpertiseRequest.getExpertiseNames())) {
+      listRelations.addAll(groupExpertiseRelationRepository.findAll(pageable).get()
+          .map(RelationResponse::fromGroupExpertiseRelation).collect(Collectors.toList()));
+    } else {
+      List<List<GroupExpertiseRelation>> groupExpertiseRelations =
+          searchExpertiseRequest.getExpertiseNames().stream()
+              .map(expertise -> groupExpertiseRelationRepository
+                  .findByExpertiseName(expertise, pageable).getContent())
+              .collect(Collectors.toList());
 
-    return new ListRelationResponse(listRelations.stream()
-        .map(relationResponse -> userService.getUserNames(relationResponse, authToken))
-        .collect(Collectors.toList()));
+
+      groupExpertiseRelations.forEach(relation -> listRelations.addAll(
+          relation.stream().filter(rel -> !rel.getRelationPhase().equals(RelationPhase.ONGOING))
+              .map(RelationResponse::fromGroupExpertiseRelation).collect(Collectors.toList())));
+
+    }
+
+
+    return new ListRelationResponse(
+        listRelations.stream().map(relationResponse -> getUserNames(relationResponse, authToken))
+            .collect(Collectors.toList()));
   }
 
 
