@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.Lists;
 import com.obss.mentor.expertise.model.GroupExpertiseRelation;
 import com.obss.mentor.expertise.repository.GroupExpertiseRelationRepository;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Cache related operations.
