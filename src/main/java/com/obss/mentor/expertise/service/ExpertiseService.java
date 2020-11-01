@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import com.google.common.collect.Lists;
 import com.obss.mentor.expertise.constant.DateFormat;
 import com.obss.mentor.expertise.constant.GroupName;
@@ -28,7 +28,7 @@ import com.obss.mentor.expertise.util.DateUtils;
  * @author Goktug Selcuk
  *
  */
-@Component
+@Service
 public class ExpertiseService {
 
   @Autowired

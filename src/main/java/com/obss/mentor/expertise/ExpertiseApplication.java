@@ -19,6 +19,7 @@ import org.springframework.web.client.RestTemplate;
 @EnableDiscoveryClient
 @EnableReactiveElasticsearchRepositories
 public class ExpertiseApplication {
+ 
 
   /**
    * Main metod.Entry point for Spring Boot application.
@@ -28,6 +29,7 @@ public class ExpertiseApplication {
   public static void main(String[] args) {
     SpringApplication.run(ExpertiseApplication.class, args);
   }
+
 
   /**
    * Rest template configuration.

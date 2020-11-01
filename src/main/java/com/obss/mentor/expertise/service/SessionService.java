@@ -4,7 +4,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import com.google.common.collect.Lists;
 import com.obss.mentor.expertise.constant.RelationPhase;
 import com.obss.mentor.expertise.exception.MentorException;
@@ -21,7 +21,7 @@ import com.obss.mentor.expertise.serviceparam.SetSessionRequest;
  * @author Goktug Selcuk
  *
  */
-@Component
+@Service
 public class SessionService {
   @Autowired
   private GroupSessionRepository groupSessionRepository;

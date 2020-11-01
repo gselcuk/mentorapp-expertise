@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import com.obss.mentor.expertise.constant.AppServer;
 import com.obss.mentor.expertise.constant.Endpoint;
@@ -14,7 +14,13 @@ import com.obss.mentor.expertise.core.OperationFactory;
 import com.obss.mentor.expertise.model.AppUser;
 import com.obss.mentor.expertise.util.SecurityUtils;
 
-@Component
+/**
+ * User related operations.
+ * 
+ * @author Goktug Selcuk
+ *
+ */
+@Service
 public class UserService {
 
   @Autowired
@@ -31,7 +37,7 @@ public class UserService {
    * @param id
    * @return
    */
-  @Cacheable("userNames")
+  @Cacheable(value = "userNames", key = "#id")
   public String findUserNameFromId(String id, String authToken) {
     if (StringUtils.isEmpty(id))
       return StringUtils.EMPTY;

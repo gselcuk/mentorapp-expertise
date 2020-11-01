@@ -14,8 +14,9 @@ public class CacheConfig {
   Config config() {
     Config config = new Config();
     MapConfig mapConfig = new MapConfig();
-    mapConfig.setTimeToLiveSeconds(300);
+    mapConfig.setTimeToLiveSeconds(3000);
     config.getMapConfigs().put("userNames", mapConfig);
     return config;
   }
+
 }
