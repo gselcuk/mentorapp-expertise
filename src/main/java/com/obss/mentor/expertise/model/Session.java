@@ -1,5 +1,6 @@
 package com.obss.mentor.expertise.model;
 
+import java.util.List;
 import lombok.Data;
 
 /**
@@ -10,7 +11,8 @@ import lombok.Data;
  */
 @Data
 public class Session {
-  
-   private String sessionDescription;
-   private String sessionDate;
+
+  private String sessionDescription;
+  private String sessionDate;
+  private List<SessionRating> sessionRatings;
 }
