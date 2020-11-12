@@ -12,6 +12,7 @@ import lombok.Data;
 @Data
 public class Session {
 
+  private String sessionId;
   private String sessionDescription;
   private String sessionDate;
   private List<SessionRating> sessionRatings;

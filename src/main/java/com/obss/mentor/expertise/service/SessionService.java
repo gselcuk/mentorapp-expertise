@@ -1,5 +1,6 @@
 package com.obss.mentor.expertise.service;
 
+import java.util.Optional;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -11,8 +12,10 @@ import com.obss.mentor.expertise.exception.MentorException;
 import com.obss.mentor.expertise.model.GroupExpertiseRelation;
 import com.obss.mentor.expertise.model.GroupSession;
 import com.obss.mentor.expertise.model.Session;
+import com.obss.mentor.expertise.model.SessionRating;
 import com.obss.mentor.expertise.repository.GroupExpertiseRelationRepository;
 import com.obss.mentor.expertise.repository.GroupSessionRepository;
+import com.obss.mentor.expertise.serviceparam.RateSessionRequest;
 import com.obss.mentor.expertise.serviceparam.SetSessionRequest;
 
 /**
@@ -84,6 +87,36 @@ public class SessionService {
    */
   public GroupSession getSessionInfo(String mentorGroupId) {
     return groupSessionRepository.findById(mentorGroupId).orElse(new GroupSession());
+  }
+
+  /**
+   * Rate session.
+   * 
+   * @param rateSession
+   */
+  public void rateSession(RateSessionRequest rateSession) {
+    GroupSession groupSession =
+        groupSessionRepository.findById(rateSession.getMentorGroupId()).orElse(null);
+
+    if (groupSession == null)
+      throw new MentorException("Session not found");
+    Session ratedSession = new Session();
+    ratedSession.setSessionDate(rateSession.getSessionDate());
+    ratedSession.setSessionDescription(rateSession.getSessionDescription());
+
+    Optional<Session> relatedSession =
+        groupSession.getSessionHistory().stream().filter(ratedSession::equals).findFirst();
+
+    relatedSession.ifPresent(session -> {
+
+      Optional<SessionRating> sessionRating = session.getSessionRatings().stream()
+          .filter(rating -> rateSession.getSessionRating().getUserId().equals(rating.getUserId()))
+          .findFirst();
+
+
+
+    });
+
   }
 
 }

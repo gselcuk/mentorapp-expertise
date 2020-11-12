@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.obss.mentor.expertise.model.GroupSession;
 import com.obss.mentor.expertise.service.SessionService;
+import com.obss.mentor.expertise.serviceparam.RateSessionRequest;
 import com.obss.mentor.expertise.serviceparam.SetSessionRequest;
 
 /***
@@ -43,5 +44,15 @@ public class SessionController {
   @GetMapping("/get/{mentorGroupId}")
   public GroupSession getSessionInfo(@PathVariable("mentorGroupId") String mentorGroupId) {
     return sessionService.getSessionInfo(mentorGroupId);
+  }
+
+  /**
+   * Rate session request.
+   * 
+   * @param rateSession
+   */
+  @PostMapping("/rate")
+  public void rateSession(@RequestBody RateSessionRequest rateSession) {
+    sessionService.rateSession(rateSession);
   }
 }
