@@ -1,6 +1,10 @@
 package com.obss.mentor.expertise.service;
 
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -15,6 +19,7 @@ import com.obss.mentor.expertise.model.Session;
 import com.obss.mentor.expertise.model.SessionRating;
 import com.obss.mentor.expertise.repository.GroupExpertiseRelationRepository;
 import com.obss.mentor.expertise.repository.GroupSessionRepository;
+import com.obss.mentor.expertise.serviceparam.GetSessionResponse;
 import com.obss.mentor.expertise.serviceparam.RateSessionRequest;
 import com.obss.mentor.expertise.serviceparam.SetSessionRequest;
 
@@ -47,14 +52,23 @@ public class SessionService {
    * @return
    */
   public GroupSession setNextSession(SetSessionRequest setSessionRequest) {
+
     GroupSession groupSession = groupSessionRepository
         .findById(setSessionRequest.getMentorGroupId()).orElse(new GroupSession());
 
     Session currentSession = new Session();
     BeanUtils.copyProperties(setSessionRequest, currentSession);
+    currentSession.setSessionId(setSessionRequest.getCurrentSessionId());
 
     if (currentSession.equals(groupSession.getCurrentSession()))
       return groupSession;
+    else if (groupSession.getCurrentSession() != null
+        && StringUtils.isNotEmpty(currentSession.getSessionId())
+        && currentSession.getSessionId().equals(groupSession.getCurrentSession().getSessionId())) {
+      currentSession.setSessionId(groupSession.getCurrentSession().getSessionId());
+      groupSession.setCurrentSession(currentSession);
+      return groupSessionRepository.save(groupSession);
+    }
 
     if (StringUtils.isNotEmpty(groupSession.getMentorGroupId())) {
       if (CollectionUtils.isNotEmpty(groupSession.getSessionHistory()))
@@ -65,7 +79,7 @@ public class SessionService {
       groupSession.setMentorGroupId(setSessionRequest.getMentorGroupId());
     }
 
-
+    currentSession.setSessionId(UUID.randomUUID().toString());
     groupSession.setCurrentSession(currentSession);
     GroupExpertiseRelation groupExpertiseRelation = groupExpertiseRelationRepository
         .findById(setSessionRequest.getMentorGroupId()).orElse(null);
@@ -85,8 +99,17 @@ public class SessionService {
    * @param mentorGroupId
    * @return
    */
-  public GroupSession getSessionInfo(String mentorGroupId) {
-    return groupSessionRepository.findById(mentorGroupId).orElse(new GroupSession());
+  public GetSessionResponse getSessionInfo(String mentorGroupId, String userId) {
+    GroupSession groupSession =
+        groupSessionRepository.findById(mentorGroupId).orElse(new GroupSession());
+    GetSessionResponse getSessionResponse = new GetSessionResponse();
+    getSessionResponse.setMentorGroupId(groupSession.getMentorGroupId());
+    getSessionResponse.setCurrentSession(groupSession.getCurrentSession());
+    if (CollectionUtils.isNotEmpty(groupSession.getSessionHistory()))
+      getSessionResponse.setSessionHistory(groupSession.getSessionHistory().stream()
+          .map(session -> session.toSessionInfoUI(userId, mentorGroupId))
+          .collect(Collectors.toList()));
+    return getSessionResponse;
   }
 
   /**
@@ -95,27 +118,51 @@ public class SessionService {
    * @param rateSession
    */
   public void rateSession(RateSessionRequest rateSession) {
-    GroupSession groupSession =
-        groupSessionRepository.findById(rateSession.getMentorGroupId()).orElse(null);
+    if (StringUtils.isNotEmpty(rateSession.getSessionId())) {
+      GroupSession groupSession =
+          groupSessionRepository.findById(rateSession.getMentorGroupId()).orElse(null);
 
-    if (groupSession == null)
-      throw new MentorException("Session not found");
-    Session ratedSession = new Session();
-    ratedSession.setSessionDate(rateSession.getSessionDate());
-    ratedSession.setSessionDescription(rateSession.getSessionDescription());
+      if (groupSession == null)
+        throw new MentorException("Session not found");
+      // TODO:last minute implementation fix the design.
 
-    Optional<Session> relatedSession =
-        groupSession.getSessionHistory().stream().filter(ratedSession::equals).findFirst();
+      List<Session> relatedSession = groupSession.getSessionHistory().stream().map(sessionHist -> {
+        SessionRating sessionRating =
+            SessionRating.builder().rating(rateSession.getSessionRating().getRating())
+                .userId(rateSession.getSessionRating().getUserId()).build();
+        if (StringUtils.isNotEmpty(sessionHist.getSessionId())
+            && sessionHist.getSessionId().equals(rateSession.getSessionId())) {
+          List<SessionRating> ratings = new ArrayList<>();
 
-    relatedSession.ifPresent(session -> {
+          if (CollectionUtils.isNotEmpty(sessionHist.getSessionRatings())) {
+            if (CollectionUtils.isEmpty(sessionHist.getSessionRatings().stream()
+                .filter(sessionRate -> sessionRate.getUserId()
+                    .equals(rateSession.getSessionRating().getUserId()))
+                .collect(Collectors.toList()))) {
+              ratings = sessionHist.getSessionRatings();
+              ratings.add(sessionRating);
+            } else {
+              ratings = sessionHist.getSessionRatings().stream().map(sessionRate -> {
+                if (sessionRate.getUserId().equals(rateSession.getSessionRating().getUserId())) {
+                  sessionRate.setRating(rateSession.getSessionRating().getRating());
+                }
+                return sessionRate;
+              }).collect(Collectors.toList());
+            }
 
-      Optional<SessionRating> sessionRating = session.getSessionRatings().stream()
-          .filter(rating -> rateSession.getSessionRating().getUserId().equals(rating.getUserId()))
-          .findFirst();
+          } else
+            ratings = Arrays.asList(sessionRating);
 
 
+          sessionHist.setSessionRatings(ratings);
+        }
+        return sessionHist;
+      }).collect(Collectors.toList());
 
-    });
+      groupSession.setSessionHistory(relatedSession);
+
+      groupSessionRepository.save(groupSession);
+    }
 
   }
 

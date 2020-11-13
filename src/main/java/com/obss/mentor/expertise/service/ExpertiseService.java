@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ import com.obss.mentor.expertise.serviceparam.JoinRelationRequest;
 import com.obss.mentor.expertise.serviceparam.ListRelationResponse;
 import com.obss.mentor.expertise.serviceparam.SearchExpertiseRequest;
 import com.obss.mentor.expertise.util.DateUtils;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Expertise service .
@@ -29,6 +31,7 @@ import com.obss.mentor.expertise.util.DateUtils;
  *
  */
 @Service
+@Slf4j
 public class ExpertiseService {
 
   @Autowired
@@ -74,11 +77,12 @@ public class ExpertiseService {
   public ListRelationResponse getRelationById(String id, Pageable pageable, String authToken) {
     RelationResponse relationResponse = RelationResponse
         .fromGroupExpertiseRelation(groupExpertiseRelationRepository.findById(id).orElse(null));
-
+    List<RelationResponse> listRelations = Lists.newArrayList();
     List<GroupExpertiseRelation> menteesRelations =
         groupExpertiseRelationRepository.findInMentees(id, pageable).getContent();
-
-    List<RelationResponse> listRelations = Lists.newArrayList(relationResponse);
+    
+    if (relationResponse != null && StringUtils.isNotEmpty(relationResponse.getMentorGroupId()))
+      listRelations.add(relationResponse);
 
     if (CollectionUtils.isNotEmpty(menteesRelations))
       listRelations.addAll(menteesRelations.stream()
@@ -120,29 +124,34 @@ public class ExpertiseService {
   public ListRelationResponse search(SearchExpertiseRequest searchExpertiseRequest,
       Pageable pageable, String authToken) {
     List<RelationResponse> listRelations = new ArrayList<>();
+    try {
+      if (searchExpertiseRequest.isAdmin()
+          && CollectionUtils.isEmpty(searchExpertiseRequest.getExpertiseNames())) {
+        listRelations.addAll(groupExpertiseRelationRepository.findAll(pageable).get()
+            .map(RelationResponse::fromGroupExpertiseRelation).collect(Collectors.toList()));
+      } else {
+        List<List<GroupExpertiseRelation>> groupExpertiseRelations =
+            searchExpertiseRequest.getExpertiseNames().stream()
+                .map(expertise -> groupExpertiseRelationRepository
+                    .findByExpertiseName(expertise, pageable).getContent())
+                .collect(Collectors.toList());
 
-    if (searchExpertiseRequest.isAdmin()
-        && CollectionUtils.isEmpty(searchExpertiseRequest.getExpertiseNames())) {
-      listRelations.addAll(groupExpertiseRelationRepository.findAll(pageable).get()
-          .map(RelationResponse::fromGroupExpertiseRelation).collect(Collectors.toList()));
-    } else {
-      List<List<GroupExpertiseRelation>> groupExpertiseRelations =
-          searchExpertiseRequest.getExpertiseNames().stream()
-              .map(expertise -> groupExpertiseRelationRepository
-                  .findByExpertiseName(expertise, pageable).getContent())
-              .collect(Collectors.toList());
+
+        groupExpertiseRelations.forEach(relation -> listRelations.addAll(
+            relation.stream().filter(rel -> !rel.getRelationPhase().equals(RelationPhase.ONGOING))
+                .map(RelationResponse::fromGroupExpertiseRelation).collect(Collectors.toList())));
+
+      }
 
 
-      groupExpertiseRelations.forEach(relation -> listRelations.addAll(
-          relation.stream().filter(rel -> !rel.getRelationPhase().equals(RelationPhase.ONGOING))
-              .map(RelationResponse::fromGroupExpertiseRelation).collect(Collectors.toList())));
-
+      return new ListRelationResponse(
+          listRelations.stream().map(relationResponse -> getUserNames(relationResponse, authToken))
+              .collect(Collectors.toList()));
+    } catch (Exception ex) {
+      log.error("An error occured on search expertise.");
     }
 
-
-    return new ListRelationResponse(
-        listRelations.stream().map(relationResponse -> getUserNames(relationResponse, authToken))
-            .collect(Collectors.toList()));
+    return new ListRelationResponse(listRelations);
   }
 
 

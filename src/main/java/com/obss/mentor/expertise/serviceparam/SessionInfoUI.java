@@ -3,11 +3,11 @@ package com.obss.mentor.expertise.serviceparam;
 import lombok.Data;
 
 @Data
-public class SetSessionRequest {
+public class SessionInfoUI {
 
-  private String mentorGroupId;
-  private String currentSessionId;
+  private String sessionId;
   private String sessionDescription;
   private String sessionDate;
+  private Double currentUserRating;
 
 }

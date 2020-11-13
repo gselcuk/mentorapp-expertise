@@ -13,7 +13,6 @@ import lombok.Data;
 public class RateSessionRequest {
   
   private String mentorGroupId;
-  private String sessionDescription;
-  private String sessionDate;
+  private String sessionId;
   private SessionRating sessionRating;
 }

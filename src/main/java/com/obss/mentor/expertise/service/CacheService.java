@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.Lists;
 import com.obss.mentor.expertise.model.GroupExpertiseRelation;
 import com.obss.mentor.expertise.repository.GroupExpertiseRelationRepository;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Cache related operations.
@@ -19,6 +20,7 @@ import com.obss.mentor.expertise.repository.GroupExpertiseRelationRepository;
  *
  */
 @Service
+@Slf4j
 public class CacheService {
 
   @Autowired
@@ -51,7 +53,12 @@ public class CacheService {
       allUsers.addAll(record.getOtherMentors());
     if (CollectionUtils.isNotEmpty(record.getMentees()))
       allUsers.addAll(record.getMentees());
+    try {
+      allUsers.parallelStream()
+          .forEach(user -> userService.findUserNameFromId(user, adminAuthToken));
 
-    allUsers.parallelStream().forEach(user -> userService.findUserNameFromId(user, adminAuthToken));
+    } catch (Exception ex) {
+      log.error("Load user names has been failed", ex);
+    }
   }
 }
